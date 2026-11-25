@@ -302,7 +302,16 @@
   }
   const title = (t) => h('h2.h2', null, t);
   const lede = (t) => (t ? h('p.lede', { text: t }) : null);
-  const block = (b) => h('div.block', null, h('h3.h3', { text: b.h }), h('p', { text: b.t }));
+  // One row pattern for Schedule, Where to stay and Travel: [time] · title + a line under it · + / ×.
+  // Rows that hold more are <details>: the details open under them.
+  const rowMain = (titleText, sub) => h('span.row__main', null,
+    h('span.row__title', { text: titleText }),
+    sub ? h('span.row__sub', null, ...rich(sub)) : null);
+  const plainRow = (titleText, sub) => h('div.row', null, rowMain(titleText, sub));
+  const openRow = (summaryKids, ...more) => h('details.row', null,
+    h('summary', null, ...summaryKids, h('span.qa-mark', { 'aria-hidden': 'true' })),
+    h('div.row__more', null, ...more));
+  const rows = (...kids) => h('div.rows', null, ...kids);
   // "Alina" + "& Thomas" / "и Томас": only the "&" / "и" is italic, so neither name is set apart.
   // .l2 is the second line where names break in two (big names); inline under the stage.
   function names(W) {
@@ -350,8 +359,8 @@
     return h('p.count', null, h('span.count__n', null, String(n)), h('span.count__l', null, W.countdown[form] || W.countdown.other));
   }
 
-  // Said once, not under every event: the dress code when the whole day shares one (Saturday is
-  // black tie four times over), and the directions to a place the first time it comes up that day.
+  // Each event is one line: when, what, where; its description, calendar and directions open under
+  // it. The dress code is said once under the day when the whole day shares one.
   function secSchedule(T, S) {
     const C = T.schedule;
     const U = T.ui;
@@ -359,16 +368,10 @@
       const evs = S.events.filter((e) => e.day === day);
       const codes = [...new Set(evs.map((e) => C.events[e.id].dress))];
       const dayDress = codes.length === 1 ? codes[0] : null;
-      const mapped = new Set();
       return h('div.day', null,
-        h('h3.label', null, C.days[day]),
+        h('h3.day__head', null, C.days[day]),
         dayDress ? h('p.day__dress', null, ...dressLine(U, dayDress)) : null,
-        ...evs.map((e) => {
-          const maps = mapsOf(e, S);
-          const firstHere = !!maps && !mapped.has(maps);
-          if (maps) mapped.add(maps);
-          return eventCard(e, C.events[e.id], U, S, { dress: !dayDress, directions: firstHere });
-        }));
+        rows(...evs.map((e) => eventRow(e, C.events[e.id], U, S, !dayDress))));
     });
     return sec('schedule', title(C.title), lede(C.line), ...days);
   }
@@ -379,8 +382,8 @@
   // "@church_tbc" in shared.json → that language's ui.church_tbc
   const whereOf = (e, U) => (e.where && e.where.startsWith('@') ? U[e.where.slice(1)] || '' : e.where);
 
-  function eventCard(e, L, U, S, show) {
-    const maps = show.directions ? mapsOf(e, S) : null;
+  function eventRow(e, L, U, S, withDress) {
+    const maps = mapsOf(e, S);
     const actions = [];
     if (e.start) {
       actions.push(h('span.cal-label', null, U.calendar));
@@ -388,20 +391,15 @@
       actions.push(h('button.chip-link', { type: 'button', onclick: () => downloadIcs(e, L, S), 'aria-label': `${U.calendar}: ${clean(L.title)} (${U.ics})` }, U.ics));
     }
     if (maps) actions.push(h('a.chip-link', { href: maps, target: '_blank', rel: 'noopener', 'aria-label': `${U.directions}: ${clean(placeOf(e, S))}` }, U.directions));
-    return h('article.ev', null,
-      h('div.ev__time', { text: L.time }),
-      h('h4.ev__title', { text: L.title }),
-      // where, then (if the day doesn't have one for everything) the dress code, each on its own line
-      h('p.ev__meta', null,
-        h('span.ev__where', null, ...rich(whereOf(e, U))),
-        show.dress ? h('span.ev__dress', null, ...dressLine(U, L.dress)) : null),
+    return openRow([h('span.row__time', { text: L.time }), rowMain(L.title, whereOf(e, U))],
+      withDress ? h('p', null, ...dressLine(U, L.dress)) : null,
       h('p', { text: L.text }),
-      actions.length ? h('div.ev__actions', null, ...actions) : null);
+      actions.length ? h('div.row__actions', null, ...actions) : null);
   }
 
   function secStay(T) {
     const C = T.stay;
-    return sec('stay', title(C.title), lede(C.line), ...C.blocks.map(block));
+    return sec('stay', title(C.title), lede(C.line), rows(...C.blocks.map((b) => plainRow(b.h, b.t))));
   }
 
   function secTravel(T, S) {
@@ -411,8 +409,9 @@
       h('p.label', null, C.taxi_groups[g]),
       ...S.taxis.filter((x) => x.group === g).map((x) =>
         h('div.taxi', null, h('span', null, x.name), h('a', { href: `tel:${x.phone.replace(/\s/g, '')}` }, x.phone)))));
-    return sec('travel', title(C.title), lede(C.line), ...C.blocks.map(block),
-      h('div.taxis', null, h('h3.h3', null, C.taxis_title), h('p', null, C.taxis_line), ...groups));
+    // the long list of taxis is folded into one row that opens
+    return sec('travel', title(C.title), lede(C.line),
+      rows(...C.blocks.map((b) => plainRow(b.h, b.t)), openRow([rowMain(C.taxis_title, C.taxis_line)], ...groups)));
   }
 
   function secQA(T) {

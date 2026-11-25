@@ -247,29 +247,46 @@ p { margin: 0 0 1em; }
 .jump { display: flex; flex-wrap: wrap; gap: 0 18px; margin: 2rem 0 0; padding: 0; list-style: none; font: var(--t-label); }
 .jump a { display: inline-block; padding: 10px 0; }
 
-/* schedule */
-.day { margin: 0 0 2.5rem; }
-.day > .label { color: var(--cherry); margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 1.5px solid currentColor; }
-.day__dress { margin: -0.4rem 0 1.25rem; }
-.ev { margin: 0 0 1.75rem; }
-.ev__time { font: var(--t-label); }
-.ev__title { margin: 0.15rem 0 0.35rem; font: var(--t-sub); }
-.ev__meta { margin: 0 0 0.5rem; }
-.ev__meta > span { display: block; }
-.ev__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.75rem; }
-.chip-link {
-  display: inline-flex; align-items: center; gap: 6px;
-  min-height: 44px; padding: 7px 14px; border: 1.5px solid currentColor; border-radius: 999px;
-  font: var(--t-label); text-decoration: none; background: none; cursor: pointer;
+/* Schedule, Where to stay, Travel: one row pattern (as in variant B) — a thin rule between rows,
+   and rows that hold more open with the same + / × as the questions. Colours stay the section's. */
+.sec { --row-time: 5.5rem; }
+.rows { border-bottom: 1px solid var(--rule-c); }
+.rows, .row { --rule-c: color-mix(in srgb, currentColor 22%, transparent); }
+.row { border-top: 1px solid var(--rule-c); }
+div.row, .row > summary {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; align-items: baseline;
+  padding: 14px 0;
 }
-
-/* stay / travel */
-.block { margin: 0 0 1.75rem; }
-.taxis { margin-top: 2.5rem; border-top: 1.5px solid currentColor; padding-top: 1.25rem; }
-.taxis .h3 { margin-bottom: 0.4rem; }
-.taxi-group { margin: 1.25rem 0 0; }
+.row > summary { cursor: pointer; list-style: none; }
+.row > summary::-webkit-details-marker { display: none; }
+.row > summary:has(.row__time) { grid-template-columns: var(--row-time) minmax(0, 1fr) auto; }
+.row__time { font: var(--t-label); color: var(--cherry); }
+.row__main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.row__title { font: 600 1.3rem/1.2 var(--serif); }
+.row__sub { color: color-mix(in srgb, currentColor 72%, transparent); }
+.row > summary .qa-mark { align-self: center; }
+.row[open] .qa-mark::after { content: "×"; }
+.row__more { padding: 0 0 16px; }
+.row > summary:has(.row__time) + .row__more { padding-left: calc(var(--row-time) + 14px); }
+.row__more > p { margin: 0 0 0.6rem; }
+.row__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 0.25rem; }
+div.row .chip-link { align-self: center; }
+/* a day: its name, then the dress code when the whole day shares one */
+.day + .day { margin-top: 2.25rem; }
+.day__head { margin: 0 0 0.2rem; font: var(--t-sub); }
+.day__dress { margin: 0 0 0.75rem; color: color-mix(in srgb, currentColor 72%, transparent); }
+/* small outlined buttons (calendar, directions): light and compact; the tap area stays 44 px */
+.chip-link {
+  position: relative; display: inline-flex; align-items: center;
+  min-height: 34px; padding: 4px 12px; border: 1px solid currentColor; border-radius: 999px;
+  font: 500 0.875rem/1.2 var(--sans); text-decoration: none; background: none; cursor: pointer;
+}
+.chip-link::after { content: ""; position: absolute; inset: -5px -3px; }
+/* taxis, inside the Travel row that opens */
+.taxi-group { margin: 0.75rem 0 0; }
+.taxi-group:first-child { margin-top: 0; }
 .taxi-group .label { margin: 0 0 0.4rem; }
-.taxi { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 12px; padding: 2px 0; border-bottom: 1px solid rgba(42, 34, 32, 0.2); }
+.taxi { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 12px; padding: 2px 0; border-bottom: 1px solid var(--rule-c, rgba(42, 34, 32, 0.2)); }
 .taxi span { padding: 8px 0; }
 .taxi a { display: inline-block; padding: 8px 0; white-space: nowrap; }
 
@@ -385,7 +402,7 @@ fieldset[aria-invalid="true"] > legend { color: var(--red); }
   .hang-star { animation: none; transform: rotate(-2deg); }
 }
 
-.cal-label { width: 100%; font: var(--t-label); opacity: 0.7; }
+.cal-label { width: 100%; font: var(--t-label); opacity: 0.7; margin-bottom: -2px; }
 
 /* ---------- finale: the moon falls asleep again, the show is over ---------- */
 .finale {
