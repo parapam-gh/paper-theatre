@@ -457,9 +457,12 @@
   }
 
   /* The finale moon: eyes open → half shut → shut as the page reaches its end, and back again on
-     the way up. Decided by how much page is left below the screen, measured in moon heights, so it
-     is the same on every screen and plays backwards exactly. Faces are swapped, never faded (the
-     stop-motion rule). Reduced motion: she just sleeps. */
+     the way up. All three frames play while she is WHOLLY on screen: the run is the stretch of
+     scroll from her bottom edge reaching the screen's bottom edge to the end of the page (the text
+     under her, ~185 px), measured from where she really is, so it is the same on every screen and
+     plays backwards exactly. (Counting in moon heights, as before, woke her up with her lower part
+     already off screen.) Faces are swapped, never faded (the stop-motion rule). Reduced motion:
+     she just sleeps. */
   let finaleWatching = false;
   function watchFinale() {
     let queued = false;
@@ -467,9 +470,10 @@
       queued = false;
       const faces = [...document.querySelectorAll('#finale .finale__face')];
       if (faces.length !== FINALE_FACES.length) return;
-      const moonH = faces[finaleFace].offsetHeight || 200;
       const left = document.documentElement.scrollHeight - (scrollY + innerHeight); // px still to scroll
-      const want = reduceMotion.matches ? 2 : left > moonH ? 0 : left > moonH * 0.35 ? 1 : 2;
+      const endBottom = faces[finaleFace].getBoundingClientRect().bottom - left; // her bottom edge at the very end
+      const run = Math.max(60, innerHeight - endBottom); // px of scroll with the whole moon on screen
+      const want = reduceMotion.matches ? 2 : left > run * 0.66 ? 0 : left > run * 0.25 ? 1 : 2;
       const target = faces[want];
       if (want === finaleFace || !target.complete || !target.naturalWidth) return; // not loaded yet: keep this face
       faces.forEach((f, i) => { f.hidden = i !== want; });
