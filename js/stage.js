@@ -99,6 +99,7 @@
   /* ---------- open stage + idle life ---------- */
   function open() {
     $('#theatre').dataset.state = 'open';
+    wireTaps();
     startIdle();
     startScroll();
   }
@@ -340,24 +341,42 @@
     blink('.l-moon-peek-1', '.l-moon-peek-2-blink', 5000, 12000); // the silly moon: now and then
   }
 
-  function blink(openSel, shutSel, min, max) {
+  // One blink: the shut-eyes frame for 150 ms. Used by the idle loop and by a tap.
+  const blinking = new Set();
+  async function blinkOnce(openSel, shutSel) {
     const eyesOpen = $(`.stage ${openSel}`);
     const eyesShut = $(`.stage ${shutSel}`);
-    if (!eyesOpen || !eyesShut) return;
+    if (!eyesOpen || !eyesShut || blinking.has(shutSel)) return;
+    blinking.add(shutSel);
+    // same nudge as the open-eyes frame (each was nudged separately during the scroll scene,
+    // so in the finished scene they sat a few px apart and the heads hopped on every blink)
+    for (const v of ['--wx', '--wy', '--wr']) eyesShut.style.setProperty(v, eyesOpen.style.getPropertyValue(v));
+    eyesShut.hidden = false;
+    eyesOpen.hidden = true;
+    await sleep(150);
+    eyesOpen.hidden = false;
+    eyesShut.hidden = true;
+    blinking.delete(shutSel);
+  }
+
+  function blink(openSel, shutSel, min, max) {
     const once = async () => {
-      if (onScreen && !document.hidden) {
-        // same nudge as the open-eyes frame (each was nudged separately during the scroll scene,
-        // so in the finished scene they sat a few px apart and the heads hopped on every blink)
-        for (const v of ['--wx', '--wy', '--wr']) eyesShut.style.setProperty(v, eyesOpen.style.getPropertyValue(v));
-        eyesShut.hidden = false;
-        eyesOpen.hidden = true;
-        await sleep(150);
-        eyesOpen.hidden = false;
-        eyesShut.hidden = true;
-      }
+      if (onScreen && !document.hidden) await blinkOnce(openSel, shutSel);
       setTimeout(once, rnd(min, max));
     };
     setTimeout(once, rnd(min, max));
+  }
+
+  // A tap on us or on the peeking moon makes us blink (also with reduced motion: it's an answer to
+  // the guest's own tap, not motion on its own). The rest of the stage lets taps through (css).
+  const BLINKERS = [['.l-couple-1', '.l-couple-2-blink'], ['.l-moon-peek-1', '.l-moon-peek-2-blink']];
+  let tapsWired = false;
+  function wireTaps() {
+    if (tapsWired) return;
+    tapsWired = true;
+    for (const [o, sh] of BLINKERS) {
+      for (const sel of [o, sh]) $(`.stage ${sel}`)?.addEventListener('click', () => blinkOnce(o, sh));
+    }
   }
 
   // Decode every stage image once the page has loaded, so the first blink or scene step on a slow

@@ -128,6 +128,12 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
     skewX(var(--skew, 0deg));
 }
 .stage .l, .stage .hang { will-change: transform; }
+/* taps go through the paper to the stage's two blinkers (the couple, the peeking moon): a tap on them
+   makes them blink (js/stage.js); everything else on the stage is see-through for the finger */
+.stage .l, .stage .hang { pointer-events: none; }
+.theatre[data-state="open"] .stage :is(.l-couple-1, .l-couple-2-blink, .l-moon-peek-1, .l-moon-peek-2-blink) { pointer-events: auto; cursor: pointer; }
+.peek, .finale__moon { cursor: pointer; }
+.stage img, .peek, .finale__moon { -webkit-tap-highlight-color: transparent; }
 
 /* names over the full-screen scene */
 .scene-title {
@@ -391,6 +397,29 @@ fieldset[aria-invalid="true"] > legend { color: var(--red); }
 .moon-says.left { flex-direction: row-reverse; }
 .moon-says.left .moon-says__line { text-align: left; }
 .moon-says.left .moon-says__moon { margin-right: 0; margin-left: calc(-1 * var(--gutter) - 26px); transform: scaleX(-1); }
+/* peek:start — written by tools/moon_eye.py, don't edit by hand */
+/* The moon in the section corners: an empty eye, the iris on top clipped to the eye, and the
+   kit's blink frame over everything for a moment. She glances across and back (7 s, in steps:
+   the long holds make it slow) and blinks every ~5 s; each corner moon is out of step with the others. */
+.peek { position: relative; aspect-ratio: 782 / 1019; }
+.peek img { position: absolute; display: block; max-width: none; }
+.peek__base, .peek__blink { inset: 0; width: 100%; height: 100%; }
+.peek__eye { position: absolute; inset: 0; clip-path: polygon(53.964% 41.217%, 56.010% 40.236%, 59.079% 39.549%, 61.893% 39.156%, 64.322% 38.960%, 62.916% 41.021%, 60.870% 42.395%, 58.824% 43.081%, 56.777% 43.180%, 55.243% 42.787%, 54.220% 42.002%); }
+.peek__iris { left: 54.476%; top: 39.745%; width: 5.115%; height: 3.925%;
+  animation: peek-look 7s steps(1, end) var(--d, 0s) infinite; }
+.peek__blink { visibility: hidden; animation: peek-blink 5.3s steps(1, end) calc(var(--d, 0s) * 1.7) infinite; }
+@keyframes peek-look {
+  0%   { left: 54.476%; top: 39.745%; }
+  34%  { left: 55.754%; top: 39.450%; }
+  39%  { left: 57.033%; top: 39.254%; }
+  44%  { left: 58.056%; top: 39.058%; }
+  80%  { left: 57.033%; top: 39.254%; }
+  85%  { left: 55.754%; top: 39.450%; }
+  90%  { left: 54.476%; top: 39.745%; }
+}
+@keyframes peek-blink { 0% { visibility: hidden; } 94% { visibility: visible; } 96.8% { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .peek__iris, .peek__blink { animation: none; } }
+/* peek:end */
 
 @media (min-width: 900px) {
   :root { --gutter: 48px; }

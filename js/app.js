@@ -292,13 +292,20 @@
     if (!star) return null;
     return h('img.hang-star', { src: `img/kit/${star}-sm.webp`, alt: '', 'aria-hidden': 'true', loading: 'lazy', decoding: 'async' });
   }
+  const PEEK_DELAY = { stay: '0s', travel: '-2.6s', qa: '-4.9s' }; // so the corner moons don't move in unison
   function moonSays(id) {
     const line = data.t.moon && data.t.moon[id];
     if (!line) return null;
     // in Travel she peeks in from the left, for variety
+    // her eyes are alive: an empty eye with the iris on top (it glances across and back) and the
+    // kit's blink frame now and then; css/site.css (peek block, from tools/moon_eye.py) moves them
+    const lazy = { alt: '', loading: 'lazy', decoding: 'async' };
     return h(`div.moon-says${id === 'travel' ? '.left' : ''}`, null,
       h('p.moon-says__line', { text: line }),
-      h('img.moon-says__moon', { src: 'img/kit/moon-peek-1-sm.webp', alt: '', 'aria-hidden': 'true', loading: 'lazy', decoding: 'async' }));
+      h('div.moon-says__moon.peek', { 'aria-hidden': 'true', style: `--d: ${PEEK_DELAY[id] || '0s'}` },
+        h('img.peek__base', { src: 'img/kit/moon-peek-eyeless-sm.webp', ...lazy }),
+        h('div.peek__eye', null, h('img.peek__iris', { src: 'img/kit/moon-peek-iris.webp', ...lazy })),
+        h('img.peek__blink', { src: 'img/kit/moon-peek-2-blink-sm.webp', ...lazy })));
   }
   const title = (t) => h('h2.h2', null, t);
   const lede = (t) => (t ? h('p.lede', { text: t }) : null);
@@ -463,10 +470,12 @@
      already off screen.) Faces are swapped, never faded (the stop-motion rule). Reduced motion:
      she just sleeps. */
   let finaleWatching = false;
+  let finaleTap = false;
   function watchFinale() {
     let queued = false;
     const update = () => {
       queued = false;
+      if (finaleTap) return;
       const faces = [...document.querySelectorAll('#finale .finale__face')];
       if (faces.length !== FINALE_FACES.length) return;
       const left = document.documentElement.scrollHeight - (scrollY + innerHeight); // px still to scroll
@@ -485,6 +494,30 @@
     finaleKick = onScroll;
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', onScroll, { passive: true });
+  }
+
+  /* Tap to blink, an easter egg. The corner moons: the kit's blink frame for 150 ms. The finale moon:
+     eyes shut for a moment — or, when she's already asleep, open for a moment. (The couple and the
+     moon on the stage: js/stage.js.) */
+  function blinkCorner(peek) {
+    const img = peek.querySelector('.peek__blink');
+    if (!img || img.dataset.tap) return;
+    img.dataset.tap = '1';
+    img.style.animation = 'none'; // the idle blink animation would win over a plain style
+    img.style.visibility = 'visible';
+    setTimeout(() => { img.style.removeProperty('animation'); img.style.removeProperty('visibility'); delete img.dataset.tap; }, 150);
+  }
+  function blinkFinale() {
+    const faces = [...document.querySelectorAll('#finale .finale__face')];
+    if (faces.length !== FINALE_FACES.length || finaleTap) return;
+    const show = finaleFace === 2 ? 0 : 2;
+    if (!faces[show].complete || !faces[show].naturalWidth) return;
+    finaleTap = true;
+    faces.forEach((f, i) => { f.hidden = i !== show; });
+    setTimeout(() => {
+      faces.forEach((f, i) => { f.hidden = i !== finaleFace; });
+      finaleTap = false;
+    }, 180);
   }
 
   /* ---------- add to calendar ---------- */
@@ -723,6 +756,11 @@
       if (gateState === 'wrong' || gateState === 'offline') gateText('prompt');
     });
     $('#rsvp-open').addEventListener('click', openRsvp);
+    $('#site').addEventListener('click', (e) => {
+      const peek = e.target.closest('.peek');
+      if (peek) blinkCorner(peek);
+      else if (e.target.closest('.finale__moon')) blinkFinale();
+    });
     wireDialog();
     if (openOnly) Stage.open();
 
