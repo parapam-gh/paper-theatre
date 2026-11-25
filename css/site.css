@@ -322,6 +322,10 @@ div.row .chip-link { align-self: center; }
   background: var(--paper); color: var(--cherry); box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
 }
 .big-btn:focus-visible { outline-color: var(--paper); }
+/* RSVP: centred like the Welcome and the finale right under it — the closing scene is symmetric
+   like the opening one; no extra red below the button */
+#rsvp { text-align: center; --sec-pb: 64px; }
+#rsvp .lede { max-width: 30em; margin-left: auto; margin-right: auto; }
 
 /* ---------- RSVP panel ---------- */
 .rsvp-dialog {
@@ -429,6 +433,7 @@ fieldset[aria-invalid="true"] > legend { color: var(--red); }
   :root { --gutter: 48px; }
   .sec { padding-top: calc(var(--topbar) + 72px); --sec-pb: 110px; }
   .welcome { padding-top: calc(var(--topbar) + 48px); --sec-pb: 80px; }
+  #rsvp { --sec-pb: 88px; }
   .moon-says__moon { width: 140px; margin-right: -40px; }
   .moon-says.left .moon-says__moon { margin-left: -40px; }
 }
