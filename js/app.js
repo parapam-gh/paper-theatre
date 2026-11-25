@@ -229,11 +229,15 @@
     ticket.classList.remove('shake');
     void ticket.offsetWidth; // restart the animation
     ticket.classList.add('shake');
-    // the typed word stays visible and selected: a typo can be seen and fixed, or simply typed over
+    // as in the brief, the ticket clears — after its shake, so the wrong word jerks with it first.
+    // If the guest has already started typing again, their new letters stay.
     const input = $('#gate-input');
+    const typed = input.value;
     input.focus();
-    input.select();
+    clearTimeout(clearWrong);
+    clearWrong = setTimeout(() => { if (input.value === typed) input.value = ''; }, 360); // = .ticket.shake
   }
+  let clearWrong;
 
   async function enterSite() {
     data = await decryptLang(lang, key); // the language may have changed during the show

@@ -1,5 +1,5 @@
 {
- "build": "20261125185711",
+ "build": "20261125192154",
  "kdf": {
   "salt": "oShdKcKkPPgT2CJ8nP/F6g==",
   "iter": 200000
@@ -11,7 +11,7 @@
     "prompt": "password, please?",
     "label": "Password",
     "submit": "Let me in",
-    "wrong": "not quite — try again.",
+    "wrong": "nice try, darling.",
     "right": "oh, it's you! come in.",
     "checking": "hmm…",
     "offline": "no connection — try again."
@@ -25,7 +25,7 @@
     "prompt": "le mot de passe, s'il vous plaît ?",
     "label": "Mot de passe",
     "submit": "Entrer",
-    "wrong": "pas tout à fait — réessayez.",
+    "wrong": "bien tenté, mon cœur.",
     "right": "ah, c'est vous ! entrez.",
     "checking": "hmm…",
     "offline": "pas de connexion — réessayez."
@@ -39,7 +39,7 @@
     "prompt": "пароль, пожалуйста?",
     "label": "Пароль",
     "submit": "Впустите",
-    "wrong": "почти — попробуйте ещё раз.",
+    "wrong": "хорошая попытка, дорогуша.",
     "right": "о, это вы! входите.",
     "checking": "хм…",
     "offline": "нет связи — попробуйте ещё раз."
