@@ -277,6 +277,7 @@
     if ($('#rsvp-dialog').open || rsvpBusy) rsvpStale = true;
     else buildRsvp(T);
     watchSections();
+    watchFinale();
   }
 
   const sec = (id, ...kids) =>
@@ -322,11 +323,18 @@
       h('ul.jump', null, ...['schedule', 'stay', 'travel', 'qa'].map((id) => h('li', null, h('a', { href: `#${id}` }, W.nav[id])))));
   }
 
-  // The end of the page closes the show the way it opened: the moon falls asleep again.
+  // The end of the page closes the show the way it opened: the moon falls asleep again — her eyes
+  // close as the page reaches its end and open again on the way back up (see watchFinale).
+  const FINALE_FACES = ['moon-3-awake', 'moon-2-drowsy', 'moon-1-asleep'];
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let finaleFace = reduceMotion.matches ? 2 : 0; // the face on show; survives a re-render (language)
+  let finaleKick = () => {}; // re-check the face (set by watchFinale; also called when a face arrives)
   function finale(T) {
     const W = T.welcome;
     return h('section.finale', { id: 'finale', 'data-theme': 'cream' },
-      h('img.finale__moon', { src: 'img/kit/moon-1-asleep-sm.webp', alt: '', 'aria-hidden': 'true', loading: 'lazy', decoding: 'async' }),
+      h('div.finale__moon', { 'aria-hidden': 'true' },
+        // not lazy: a lazy image that is hidden never loads, and the first swap would show nothing
+        ...FINALE_FACES.map((f, i) => h('img.finale__face', { src: `img/kit/${f}-sm.webp`, alt: '', decoding: 'async', hidden: i !== finaleFace, onload: () => finaleKick() }))),
       T.finale ? h('p.finale__line', { text: T.finale.line }) : null,
       h('p.finale__names', null, ...names(W)),
       h('p.finale__date', null, W.date));
@@ -428,6 +436,34 @@
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', onScroll, { passive: true });
     document.addEventListener('scenechange', onScroll);
+  }
+
+  /* The finale moon: eyes open → half shut → shut as the page reaches its end, and back again on
+     the way up. Decided by how much page is left below the screen, measured in moon heights, so it
+     is the same on every screen and plays backwards exactly. Faces are swapped, never faded (the
+     stop-motion rule). Reduced motion: she just sleeps. */
+  let finaleWatching = false;
+  function watchFinale() {
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const faces = [...document.querySelectorAll('#finale .finale__face')];
+      if (faces.length !== FINALE_FACES.length) return;
+      const moonH = faces[finaleFace].offsetHeight || 200;
+      const left = document.documentElement.scrollHeight - (scrollY + innerHeight); // px still to scroll
+      const want = reduceMotion.matches ? 2 : left > moonH ? 0 : left > moonH * 0.35 ? 1 : 2;
+      const target = faces[want];
+      if (want === finaleFace || !target.complete || !target.naturalWidth) return; // not loaded yet: keep this face
+      faces.forEach((f, i) => { f.hidden = i !== want; });
+      finaleFace = want;
+    };
+    update();
+    if (finaleWatching) return;
+    finaleWatching = true;
+    const onScroll = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
+    finaleKick = onScroll;
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll, { passive: true });
   }
 
   /* ---------- add to calendar ---------- */
