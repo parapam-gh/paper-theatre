@@ -245,16 +245,18 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
 .label { font: var(--t-label); }
 p { margin: 0 0 1em; }
 
-/* welcome: the invitation, then when and where (the names are on the stage; here for screen readers) */
+/* welcome: centred on the same axis as the stage above it; one tight group — the invitation, when,
+   where, how long — then the way into the details. The names are on the stage (here for screen
+   readers only); the countdown is a quiet line, not a second headline. */
 .names { margin: 0 0 0.5em; font: var(--t-names); }
-.welcome__line { margin: 0 0 1.5rem; font: var(--t-sub); text-wrap: pretty; }
+.welcome { text-align: center; --sec-pb: 56px; padding-top: calc(var(--topbar) + 28px); }
+.welcome__line { margin: 0 auto 1.25rem; max-width: 22em; font: var(--t-sub); text-wrap: balance; }
 .welcome__when { margin: 0; font: var(--t-label); }
-.welcome__place { margin: 0; }
-.count { display: flex; align-items: baseline; gap: 0.5rem; margin: 2.25rem 0 0.25rem; }
-.count__n { font: var(--t-title); }
-.count__l { font: var(--t-text); }
-.jump { display: flex; flex-wrap: wrap; gap: 0 18px; margin: 2rem 0 0; padding: 0; list-style: none; font: var(--t-label); }
-.jump a { display: inline-block; padding: 10px 0; }
+.welcome__place { margin: 0.15rem 0 0; }
+.count { display: flex; justify-content: center; align-items: baseline; gap: 0.3em; margin: 0.15rem 0 0; font: var(--t-text); opacity: 0.8; }
+.count__n, .count__l { font: inherit; }
+.jump { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 22px; margin: 1.5rem 0 0; padding: 0; list-style: none; font: var(--t-label); }
+.jump a { display: inline-block; padding: 10px 0; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); }
 
 /* Schedule, Where to stay, Travel: one row pattern (as in variant B) — a thin rule between rows,
    and rows that hold more open with the same + / × as the questions. Colours stay the section's. */
@@ -426,6 +428,7 @@ fieldset[aria-invalid="true"] > legend { color: var(--red); }
 @media (min-width: 900px) {
   :root { --gutter: 48px; }
   .sec { padding-top: calc(var(--topbar) + 72px); --sec-pb: 110px; }
+  .welcome { padding-top: calc(var(--topbar) + 48px); --sec-pb: 80px; }
   .moon-says__moon { width: 140px; margin-right: -40px; }
   .moon-says.left .moon-says__moon { margin-left: -40px; }
 }

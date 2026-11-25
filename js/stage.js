@@ -124,7 +124,9 @@
     'moon-peek-1':       { cx: 0.76, ty: 0.15, w: 0.40 },
     'moon-peek-2-blink': { cx: 0.76, ty: 0.15, w: 0.40 },
     'star-stick':        { cx: 0.78, by: 0.86, w: 0.13 },
-    'floor':             { cx: 0.50, ty: 0.815, w: 1.40 },
+    // fit: the share of the floor image that is shadow margin below the paper (kit/web/manifest.json:
+    // 42 / 622) — the floor is lifted if needed so its front edge is always on screen, not cut flat
+    'floor':             { cx: 0.50, ty: 0.815, w: 1.40, fit: 0.0675 },
     'couple-1':          { cx: 0.50, by: 0.90, w: 0.42 },
     'couple-2-blink':    { cx: 0.50, by: 0.90, w: 0.42 },
   };
@@ -230,7 +232,8 @@
         move(el, B, { x: colX + t.cx * u - ox * B.w * t.s, y: t.ty * VH }, t.s);
       } else {
         const s = (t.w * u) / B.w;
-        const y = t.ty != null ? t.ty * VH : t.by * VH - B.h * s;
+        let y = t.ty != null ? t.ty * VH : t.by * VH - B.h * s;
+        if (t.fit) y = Math.min(y, VH - 6 - B.h * s * (1 - t.fit)); // paper's front edge 6 px above the bottom
         move(el, B, { x: colX + t.cx * u - (B.w * s) / 2, y }, s);
         // the couple's heads (a little below the image box, which carries the shadow margin)
         if (name === 'couple-1') titleZone = { top: VH * 0.26, bottom: y + B.h * s * 0.04 - 14 };
