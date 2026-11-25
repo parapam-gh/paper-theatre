@@ -395,5 +395,5 @@ fieldset[aria-invalid="true"] > legend { color: var(--red); }
 .finale__moon { width: min(52vw, 240px); margin: 0 auto 1rem; }
 .finale__face { display: block; width: 100%; height: auto; }
 .finale__line { margin: 0 0 1.5rem; font: var(--t-voice); }
-.finale__names { margin: 0; font: var(--t-sub); }
+.finale__names { margin: 0; font: var(--t-sub); font-weight: 500; } /* italic is loaded at 400–500 only: 600 would be a fake bold "&"/"и" */
 .finale__date { margin: 0.35rem 0 0; font: var(--t-label); }
