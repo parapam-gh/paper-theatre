@@ -152,8 +152,12 @@
       measure();
       sceneK = -1;
       onScroll();
+      centre();
     }, { passive: true });
-    if ('ResizeObserver' in window) new ResizeObserver(placeTitle).observe($('#scene-title'));
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(placeTitle).observe($('#scene-title'));
+      new ResizeObserver(() => centre()).observe($('.theatre__in')); // names under the stage changed size
+    } else centre();
     applyScene(sceneProgress());
   }
 
@@ -247,6 +251,33 @@
     const scale = Math.max(0.6, Math.min(1, room / h));
     title.style.setProperty('--st-scale', scale.toFixed(3));
     title.style.top = `${Math.round(titleZone.bottom - h)}px`;
+  }
+
+  // After the curtain the stage and the names under it sit at the top of the screen; on a tall
+  // phone that left ~40% empty below. They drop to the middle — in three jerky steps the first time
+  // (stop-motion), at once when the caption changes (language) or the screen is resized. A margin,
+  // not a transform, so measure() reads the real position and the scroll scene still lines up.
+  let drop = 0;
+  let centred = false;
+  async function centre() {
+    if (!moves) return; // no scroll scene (reduced motion): the theatre isn't a full screen
+    const sticky = $('#theatre-sticky');
+    const inn = $('.theatre__in');
+    const cs = getComputedStyle(sticky);
+    const room = sticky.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    const target = Math.max(0, Math.round((room - inn.offsetHeight) / 2));
+    if (target === drop) return;
+    const from = drop;
+    const steps = centred || still() ? 1 : 3;
+    centred = true;
+    for (let i = 1; i <= steps; i++) {
+      drop = Math.round(from + ((target - from) * i) / steps);
+      inn.style.marginTop = `${drop}px`;
+      if (i < steps) await sleep(110);
+    }
+    measure();
+    sceneK = -1;
+    applyScene(sceneProgress());
   }
 
   function applyScene(k) {

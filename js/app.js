@@ -239,8 +239,11 @@
     data = await decryptLang(lang, key); // the language may have changed during the show
     entering = false;
     document.documentElement.classList.remove('returning');
-    Stage.open(); // open stage + idle life (stars swing, blinks)
+    // the names go under the stage BEFORE it opens: the stage then drops to the middle of the screen
+    // once, with the names already there (not once without them and again with them)
+    render();
     $('#gate').hidden = true;
+    Stage.open(); // open stage + idle life (stars swing, blinks)
     $('#site').hidden = false;
     $('#rsvp-open').hidden = false;
     $('#skip').hidden = false;
@@ -248,7 +251,6 @@
     const theatre = $('#theatre');
     theatre.removeAttribute('aria-labelledby');
     theatre.setAttribute('aria-label', pub.langs[lang].title);
-    render();
     window.scrollTo(0, 0);
     // land keyboard and screen-reader users on the content
     const heading = $('#welcome .names');
@@ -266,10 +268,11 @@
     cap.replaceChildren(
       h('p.cap__names', { 'aria-hidden': 'true' }, ...names(W)), // the h1 below carries the names
       h('p.cap__date', null, W.date),
+      h('p.cap__place', { text: W.place }),
       h('a.cap__scroll', { href: '#welcome' }, `${T.ui.scroll} ↓`));
     cap.hidden = false;
     $('#scene-title').replaceChildren(h('p.st__names', null, ...names(W)), h('p.st__date', null, W.date));
-    $('#site').replaceChildren(secWelcome(T, S), secSchedule(T, S), secStay(T), secTravel(T, S), secQA(T), secRSVP(T));
+    $('#site').replaceChildren(secWelcome(T, S), secSchedule(T, S), secStay(T), secTravel(T, S), secQA(T), secRSVP(T), finale(T));
     // never rebuild the RSVP panel under the guest's fingers
     if ($('#rsvp-dialog').open || rsvpBusy) rsvpStale = true;
     else buildRsvp(T);
@@ -306,15 +309,27 @@
     return [W.first, ' ', h('span.l2', null, h('em', null, m[1]), ' ', m[2])];
   }
 
+  // Welcome: the invitation first, then when and where, then the way into the details. The names
+  // are already on the stage (and in the scene), so here they are for screen readers only.
   function secWelcome(T, S) {
     const W = T.welcome;
     return sec('welcome',
       h('h1.names', null, ...names(W)),
-      h('p.welcome__date', null, W.date),
+      W.line ? h('p.welcome__line', { text: W.line }) : null,
+      h('p.welcome__when', null, W.weekend || W.date),
       h('p.welcome__place', { text: W.place }),
-      lede(W.line),
       countdown(W, S),
       h('ul.jump', null, ...['schedule', 'stay', 'travel', 'qa'].map((id) => h('li', null, h('a', { href: `#${id}` }, W.nav[id])))));
+  }
+
+  // The end of the page closes the show the way it opened: the moon falls asleep again.
+  function finale(T) {
+    const W = T.welcome;
+    return h('section.finale', { id: 'finale', 'data-theme': 'cream' },
+      h('img.finale__moon', { src: 'img/kit/moon-1-asleep-sm.webp', alt: '', 'aria-hidden': 'true', loading: 'lazy', decoding: 'async' }),
+      T.finale ? h('p.finale__line', { text: T.finale.line }) : null,
+      h('p.finale__names', null, ...names(W)),
+      h('p.finale__date', null, W.date));
   }
 
   function countdown(W, S) {

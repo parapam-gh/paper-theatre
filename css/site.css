@@ -45,7 +45,7 @@ button { font: inherit; color: inherit; }
 a { color: inherit; text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
 [hidden] { display: none !important; }
 
-.sr-only, .theatre[data-scroll] ~ #site .names {
+.sr-only, .welcome .names {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
@@ -105,6 +105,9 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
 /* open without the scroll scene (phone set to reduce motion): just the stage and the names */
 .theatre[data-state="open"]:not([data-scroll]) .theatre__sticky { position: static; height: auto; padding-bottom: 44px; }
 .theatre__in {
+  /* top-aligned (not stretched): once open, js/stage.js drops it to the middle of the screen with a
+     margin-top, in three jerky steps (see centre()) */
+  align-self: flex-start;
   /* the stage fills a phone's width; on tall/large screens it stops growing so the props still fit */
   --stage-w: min(100vw, 560px, calc((100svh - var(--topbar)) * 0.58));
   width: var(--stage-w);
@@ -137,8 +140,6 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
   text-shadow: 0 2px 0 rgb(60 10 10 / 0.25);
 }
 .stage .inner.unclipped { -webkit-clip-path: none !important; clip-path: none !important; }
-/* with the scroll scene the big names are on the scene; the Welcome block keeps them for screen readers only */
-.theatre[data-scroll] ~ #site .welcome { min-height: 0; }
 /* a returning guest (key remembered, see the boot script in index.html): open stage straight away,
    no gate flashing up while the texts load */
 .returning #gate, .returning .stage .only-closed { display: none; }
@@ -146,7 +147,7 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
 .scene-title .st__date { margin: 0.6rem 0 0; font: var(--t-label); }
 /* names: two lines, only the "&" / "и" in italic */
 .names .l2, .st__names .l2 { display: block; }
-.names em, .st__names em, .cap__names em { font-style: italic; }
+.names em, .st__names em, .cap__names em, .finale__names em { font-style: italic; }
 .stage .l-shade { background: rgb(52 26 20 / 0.94); }
 /* strings of the hanging stars, continued up under the arch */
 .stage .string { position: absolute; width: 1.5px; transform: translateX(-50%); background: #D6BA8C; }
@@ -175,6 +176,7 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
 .caption p { margin: 0; }
 .cap__names { font: var(--t-title); }
 .caption .cap__date { margin-top: 0.5rem; font: var(--t-label); }
+.caption .cap__place { margin-top: 0.15rem; }
 .cap__scroll { display: inline-block; margin-top: 0.6rem; padding: 12px 10px; font: var(--t-label); text-decoration: none; opacity: 0.75; }
 .ticket__input {
   position: absolute; left: 13%; right: 21%; top: 40%; height: 34%;
@@ -232,12 +234,11 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
 .label { font: var(--t-label); }
 p { margin: 0 0 1em; }
 
-/* welcome */
-.welcome { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; }
-.welcome .sec__in { width: 100%; }
+/* welcome: the invitation, then when and where (the names are on the stage; here for screen readers) */
 .names { margin: 0 0 0.5em; font: var(--t-names); }
-.welcome__date { margin: 0; font: var(--t-label); }
-.welcome__place { margin: 0 0 1.75rem; }
+.welcome__line { margin: 0 0 1.5rem; font: var(--t-sub); text-wrap: pretty; }
+.welcome__when { margin: 0; font: var(--t-label); }
+.welcome__place { margin: 0; }
 .count { display: flex; align-items: baseline; gap: 0.5rem; margin: 2.25rem 0 0.25rem; }
 .count__n { font: var(--t-title); }
 .count__l { font: var(--t-text); }
@@ -382,3 +383,13 @@ fieldset[aria-invalid="true"] > legend { color: var(--red); }
 }
 
 .cal-label { width: 100%; font: var(--t-label); opacity: 0.7; }
+
+/* ---------- finale: the moon falls asleep again, the show is over ---------- */
+.finale {
+  background: var(--cream); color: var(--ink); text-align: center;
+  padding: 64px max(var(--gutter), env(safe-area-inset-right)) calc(64px + env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+}
+.finale__moon { display: block; width: min(52vw, 240px); height: auto; margin: 0 auto 1rem; }
+.finale__line { margin: 0 0 1.5rem; font: var(--t-voice); }
+.finale__names { margin: 0; font: var(--t-sub); }
+.finale__date { margin: 0.35rem 0 0; font: var(--t-label); }
