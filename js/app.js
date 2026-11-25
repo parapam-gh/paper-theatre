@@ -350,33 +350,51 @@
     return h('p.count', null, h('span.count__n', null, String(n)), h('span.count__l', null, W.countdown[form] || W.countdown.other));
   }
 
+  // Said once, not under every event: the dress code when the whole day shares one (Saturday is
+  // black tie four times over), and the directions to a place the first time it comes up that day.
   function secSchedule(T, S) {
     const C = T.schedule;
-    const days = ['fri', 'sat', 'sun'].map((day) => h('div.day', null,
-      h('h3.label', null, C.days[day]),
-      ...S.events.filter((e) => e.day === day).map((e) => eventCard(e, C.events[e.id], T.ui, S))));
+    const U = T.ui;
+    const days = ['fri', 'sat', 'sun'].map((day) => {
+      const evs = S.events.filter((e) => e.day === day);
+      const codes = [...new Set(evs.map((e) => C.events[e.id].dress))];
+      const dayDress = codes.length === 1 ? codes[0] : null;
+      const mapped = new Set();
+      return h('div.day', null,
+        h('h3.label', null, C.days[day]),
+        dayDress ? h('p.day__dress', null, ...dressLine(U, dayDress)) : null,
+        ...evs.map((e) => {
+          const maps = mapsOf(e, S);
+          const firstHere = !!maps && !mapped.has(maps);
+          if (maps) mapped.add(maps);
+          return eventCard(e, C.events[e.id], U, S, { dress: !dayDress, directions: firstHere });
+        }));
+    });
     return sec('schedule', title(C.title), lede(C.line), ...days);
   }
+  // French puts a non-breaking space before a colon
+  const dressLine = (U, d) => [`${U.dress}${lang === 'fr' ? '\u00a0:' : ':'} `, ...rich(d)];
+  const mapsOf = (e, S) => (e.maps === 'venue' ? S.venue.maps : e.maps);
 
   // "@church_tbc" in shared.json → that language's ui.church_tbc
   const whereOf = (e, U) => (e.where && e.where.startsWith('@') ? U[e.where.slice(1)] || '' : e.where);
 
-  function eventCard(e, L, U, S) {
-    const maps = e.maps === 'venue' ? S.venue.maps : e.maps;
+  function eventCard(e, L, U, S, show) {
+    const maps = show.directions ? mapsOf(e, S) : null;
     const actions = [];
     if (e.start) {
       actions.push(h('span.cal-label', null, U.calendar));
       actions.push(h('a.chip-link', { href: gcalUrl(e, L, S), target: '_blank', rel: 'noopener', 'aria-label': `${U.calendar}: ${clean(L.title)} (${U.google})` }, U.google));
       actions.push(h('button.chip-link', { type: 'button', onclick: () => downloadIcs(e, L, S), 'aria-label': `${U.calendar}: ${clean(L.title)} (${U.ics})` }, U.ics));
     }
-    if (maps) actions.push(h('a.chip-link', { href: maps, target: '_blank', rel: 'noopener', 'aria-label': `${U.directions}: ${clean(placeOf(e, S))}` }, `${U.directions} ↗`));
+    if (maps) actions.push(h('a.chip-link', { href: maps, target: '_blank', rel: 'noopener', 'aria-label': `${U.directions}: ${clean(placeOf(e, S))}` }, U.directions));
     return h('article.ev', null,
       h('div.ev__time', { text: L.time }),
       h('h4.ev__title', { text: L.title }),
-      // where, then the dress code, each on its own line (French puts a non-breaking space before a colon)
+      // where, then (if the day doesn't have one for everything) the dress code, each on its own line
       h('p.ev__meta', null,
         h('span.ev__where', null, ...rich(whereOf(e, U))),
-        h('span.ev__dress', null, `${U.dress}${lang === 'fr' ? ' :' : ':'} `, ...rich(L.dress))),
+        show.dress ? h('span.ev__dress', null, ...dressLine(U, L.dress)) : null),
       h('p', { text: L.text }),
       actions.length ? h('div.ev__actions', null, ...actions) : null);
   }

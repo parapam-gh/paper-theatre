@@ -177,6 +177,8 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
 .cap__names { font: var(--t-title); }
 .caption .cap__date { margin-top: 0.5rem; font: var(--t-label); }
 .caption .cap__place { margin-top: 0.15rem; }
+/* if the names under the stage must wrap, they break before the "&" / "и", never after it */
+.cap__names .l2 { white-space: nowrap; }
 .cap__scroll { display: inline-block; margin-top: 0.6rem; padding: 12px 10px; font: var(--t-label); text-decoration: none; opacity: 0.75; }
 .ticket__input {
   position: absolute; left: 13%; right: 21%; top: 40%; height: 34%;
@@ -248,6 +250,7 @@ p { margin: 0 0 1em; }
 /* schedule */
 .day { margin: 0 0 2.5rem; }
 .day > .label { color: var(--cherry); margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 1.5px solid currentColor; }
+.day__dress { margin: -0.4rem 0 1.25rem; }
 .ev { margin: 0 0 1.75rem; }
 .ev__time { font: var(--t-label); }
 .ev__title { margin: 0.15rem 0 0.35rem; font: var(--t-sub); }
