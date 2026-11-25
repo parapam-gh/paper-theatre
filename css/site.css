@@ -179,7 +179,10 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
 .caption .cap__place { margin-top: 0.15rem; }
 /* if the names under the stage must wrap, they break before the "&" / "и", never after it */
 .cap__names .l2 { white-space: nowrap; }
-.cap__scroll { display: inline-block; margin-top: 0.6rem; padding: 12px 10px; font: var(--t-label); text-decoration: none; opacity: 0.75; }
+.cap__scroll { display: inline-block; margin-top: 0.6rem; padding: 12px 10px; font: var(--t-label); text-decoration: none; opacity: 0.85; }
+/* the arrow hops down and back, two frames (stop-motion), so it's clear there is more below */
+.cap__arrow { display: inline-block; margin-left: 0.2em; font-size: 1.15em; animation: hop-down 1.2s steps(1, end) infinite; }
+@keyframes hop-down { 0% { transform: translateY(0); } 50% { transform: translateY(4px); } }
 .ticket__input {
   position: absolute; left: 13%; right: 21%; top: 40%; height: 34%;
   border: 0; border-bottom: 1.5px dashed rgba(42, 34, 32, 0.35); border-radius: 0;
@@ -414,3 +417,24 @@ fieldset[aria-invalid="true"] > legend { color: var(--red); }
 .finale__line { margin: 0 0 1.5rem; font: var(--t-voice); }
 .finale__names { margin: 0; font: var(--t-sub); font-weight: 500; } /* italic is loaded at 400–500 only: 600 would be a fake bold "&"/"и" */
 .finale__date { margin: 0.35rem 0 0; font: var(--t-label); }
+
+/* ---------- hover and press ----------
+   Paper is nudged by hand: an instant small shift, no easing (the stop-motion rule); links get a
+   firmer underline; rows that open underline their title. Hover only with a real mouse, so a tap
+   on a phone never leaves a button stuck in its hover look. */
+@media (hover: hover) and (pointer: fine) {
+  a:hover { text-decoration-thickness: 2px; }
+  .langs button:hover { opacity: 1; text-decoration: underline; text-underline-offset: 0.35em; text-decoration-thickness: 1px; }
+  .rsvp-btn:hover, .big-btn:hover, .send:hover, .ticket__go:hover { transform: translate(1px, -2px) rotate(-1deg); }
+  .chip-link:hover, .chip:hover span { background: color-mix(in srgb, currentColor 12%, transparent); }
+  .row > summary:hover .row__title, .qa summary:hover > span:first-child { text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+  .panel__close:hover { transform: rotate(-8deg); }
+  .cap__scroll:hover { opacity: 1; }
+}
+/* pressed: pushed into the paper */
+.rsvp-btn:active, .big-btn:active, .send:active, .chip-link:active, .chip:active span, .ticket__go:active { transform: translateY(1px); }
+@media (prefers-reduced-motion: reduce) {
+  .cap__arrow { animation: none; }
+  .rsvp-btn:hover, .big-btn:hover, .send:hover, .ticket__go:hover, .panel__close:hover,
+  .rsvp-btn:active, .big-btn:active, .send:active, .chip-link:active, .chip:active span, .ticket__go:active { transform: none; }
+}

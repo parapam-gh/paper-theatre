@@ -269,7 +269,7 @@
       h('p.cap__names', { 'aria-hidden': 'true' }, ...names(W)), // the h1 below carries the names
       h('p.cap__date', null, W.date),
       h('p.cap__place', { text: W.place }),
-      h('a.cap__scroll', { href: '#welcome' }, `${T.ui.scroll} ↓`));
+      h('a.cap__scroll', { href: '#welcome' }, T.ui.scroll, h('span.cap__arrow', { 'aria-hidden': 'true' }, '↓')));
     cap.hidden = false;
     $('#scene-title').replaceChildren(h('p.st__names', null, ...names(W)), h('p.st__date', null, W.date));
     $('#site').replaceChildren(secWelcome(T, S), secSchedule(T, S), secStay(T), secTravel(T, S), secQA(T), secRSVP(T), finale(T));
