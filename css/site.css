@@ -282,7 +282,9 @@ div.row, .row > summary {
 div.row .chip-link { align-self: center; }
 /* a day: its name, then the dress code when the whole day shares one */
 .day + .day { margin-top: 2.25rem; }
-.day__head { margin: 0 0 0.2rem; font: var(--t-sub); }
+.day__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; margin: 0 0 0.2rem; }
+.day__act { font: var(--t-label); color: var(--cherry); }
+.day__name { font: var(--t-sub); }
 .day__dress { margin: 0 0 0.75rem; color: color-mix(in srgb, currentColor 72%, transparent); }
 /* small outlined buttons (calendar, directions): light and compact; the tap area stays 44 px */
 .chip-link {

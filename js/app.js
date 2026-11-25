@@ -368,15 +368,17 @@
 
   // Each event is one line: when, what, where; its description, calendar and directions open under
   // it. The dress code is said once under the day when the whole day shares one.
+  const ROMAN = ['I', 'II', 'III'];
   function secSchedule(T, S) {
     const C = T.schedule;
     const U = T.ui;
-    const days = ['fri', 'sat', 'sun'].map((day) => {
+    const days = ['fri', 'sat', 'sun'].map((day, i) => {
       const evs = S.events.filter((e) => e.day === day);
       const codes = [...new Set(evs.map((e) => C.events[e.id].dress))];
       const dayDress = codes.length === 1 ? codes[0] : null;
       return h('div.day', null,
-        h('h3.day__head', null, C.days[day]),
+        // the weekend as three acts (the days really are a sequence), as in variant B
+        h('h3.day__head', null, h('span.day__act', null, `${U.act} ${ROMAN[i]}`), ' ', h('span.day__name', null, C.days[day])),
         dayDress ? h('p.day__dress', null, ...dressLine(U, dayDress)) : null,
         rows(...evs.map((e) => eventRow(e, C.events[e.id], U, S, !dayDress))));
     });
