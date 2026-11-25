@@ -79,7 +79,7 @@ a { color: inherit; text-underline-offset: 0.18em; text-decoration-thickness: 1p
 }
 /* The bar takes the colour of the section under it (so text never scrolls under the
    language switch), and the RSVP button flips to contrast with it. */
-body[data-under="gate"]   .topbar { background: var(--cream); }
+body[data-under="gate"] .topbar, body[data-under="cream"] .topbar { background: var(--cream); }
 body[data-under="cherry"] .topbar { background: var(--cherry); color: var(--paper); }
 body[data-under="paper"]  .topbar { background: var(--paper); }
 body[data-under="butter"] .topbar { background: var(--butter); }
