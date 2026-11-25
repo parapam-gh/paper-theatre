@@ -1,0 +1,384 @@
+/* Alina & Thomas — wedding site. Mobile first. Colours sampled from the paper kit (kit/palette.md). */
+:root {
+  --cherry: #960C15;   /* backdrop #920811, a touch lighter for big blocks */
+  --red: #B00413;      /* ribbon on the frame */
+  --blush: #F28980;    /* curtain */
+  --butter: #F8C079;   /* moon */
+  --paper: #F6E6CE;    /* calm sections */
+  --cream: #F6EBDD;    /* page around the stage */
+  --ink: #2A2220;      /* floor squares, a little warmer */
+
+  --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Type: five roles and nothing else (as in the PDF mockups).
+     1 title  serif upright — the names (--t-names) and section titles (--t-title)
+     2 voice  serif italic  — the moon's voice only: the sign (sized by the stage) and her one-liners
+     3 sub    serif upright, smaller — event and block headings
+     4 text   sans regular  — everything you read (--t-small: form hints only)
+     5 label  sans semibold, normal case, no letter-spacing — days, times, dates, buttons, links, form labels
+     Italic in the names is only the "&" / "и", so neither name is set apart. */
+  --t-names: 500 clamp(3.2rem, 15vw, 5.5rem)/0.92 var(--serif);
+  --t-title: 500 clamp(2.75rem, 12vw, 4.25rem)/0.95 var(--serif);
+  --t-sub:   600 1.6rem/1.15 var(--serif);
+  --t-voice: italic 500 1.5rem/1.15 var(--serif);   /* the moon's one-liners (the sign sizes itself by the stage) */
+  --t-text:  400 1.0625rem/1.55 var(--sans);
+  --t-small: 400 0.8125rem/1.35 var(--sans);
+  --t-label: 600 0.9375rem/1.25 var(--sans);
+  --t-glyph: 500 1.75rem/1 var(--serif);   /* the → × + symbols */
+  --gutter: 24px;
+  --measure: 34rem;
+  --topbar: 56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: var(--topbar); }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font: var(--t-text);
+  -webkit-font-smoothing: antialiased;
+}
+img { display: block; max-width: 100%; height: auto; }
+button { font: inherit; color: inherit; }
+a { color: inherit; text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+[hidden] { display: none !important; }
+
+.sr-only, .theatre[data-scroll] ~ #site .names {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip { position: absolute; left: -999px; top: 8px; z-index: 50; background: var(--ink); color: var(--paper); padding: 8px 12px; }
+.skip:focus { left: 8px; }
+:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.noscript { padding: 2rem var(--gutter); text-align: center; }
+
+/* Placeholder copy from the brief: [like this] — dotted so it's easy to spot while drafting */
+.ph { text-decoration: underline dotted; text-underline-offset: 0.22em; text-decoration-thickness: 1px; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: fixed; inset: 0 0 auto 0; z-index: 20;
+  height: calc(var(--topbar) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) max(var(--gutter), env(safe-area-inset-right)) 0 max(var(--gutter), env(safe-area-inset-left));
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  pointer-events: none;
+}
+.topbar > * { pointer-events: auto; }
+.langs { display: flex; align-items: center; gap: 0; font: var(--t-label); margin-left: -8px; }
+.langs button {
+  background: none; border: 0; padding: 10px 8px; min-width: 44px; min-height: 44px; cursor: pointer; opacity: 0.85;
+}
+.langs button[aria-pressed="true"] { opacity: 1; text-decoration: underline; text-underline-offset: 0.35em; text-decoration-thickness: 1.5px; }
+.rsvp-btn {
+  border: 0; cursor: pointer; border-radius: 999px;
+  padding: 8px 16px; font: var(--t-label);
+  background: var(--cherry); color: var(--paper);
+  box-shadow: 0 3px 0 rgba(42, 34, 32, 0.18);
+}
+/* The bar takes the colour of the section under it (so text never scrolls under the
+   language switch), and the RSVP button flips to contrast with it. */
+body[data-under="gate"]   .topbar { background: var(--cream); }
+body[data-under="cherry"] .topbar { background: var(--cherry); color: var(--paper); }
+body[data-under="paper"]  .topbar { background: var(--paper); }
+body[data-under="butter"] .topbar { background: var(--butter); }
+body[data-under="blush"]  .topbar { background: var(--blush); }
+body[data-under="ink"]    .topbar { background: var(--ink); color: var(--paper); }
+body[data-under="cherry"] .rsvp-btn, body[data-under="ink"] .rsvp-btn { background: var(--paper); color: var(--cherry); }
+.rsvp-btn:focus-visible { outline-color: var(--cherry); }
+body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-btn:focus-visible { outline-color: var(--paper); }
+
+/* ---------- the paper theatre ---------- */
+.theatre { background: var(--cream); }
+/* One screen that stays put while the page scrolls past it (step 5 plays the scene on this scroll).
+   overflow is clipped HERE, not on .theatre: a clipping parent would break position: sticky. */
+.theatre__sticky {
+  position: sticky; top: 0;
+  height: 100vh; height: 100svh;
+  display: flex; justify-content: center;
+  padding: calc(var(--topbar) + 4px) 0 28px;
+  overflow: hidden;
+}
+/* scroll scene on: the theatre is taller than the screen, the extra height is the scene's scroll track */
+.theatre[data-scroll] { height: 270vh; height: 270svh; }
+/* open without the scroll scene (phone set to reduce motion): just the stage and the names */
+.theatre[data-state="open"]:not([data-scroll]) .theatre__sticky { position: static; height: auto; padding-bottom: 44px; }
+.theatre__in {
+  /* the stage fills a phone's width; on tall/large screens it stops growing so the props still fit */
+  --stage-w: min(100vw, 560px, calc((100svh - var(--topbar)) * 0.58));
+  width: var(--stage-w);
+  display: flex; flex-direction: column; align-items: center;
+}
+/* open: the stage stays where it was (no jump after the curtain), names under it, then the site */
+.stage { position: relative; width: 100%; }
+.stage .inner { position: absolute; inset: 0; }
+.stage .l, .stage .hang, .stage .hang > img { position: absolute; display: block; max-width: none; }
+/* Every moving piece composes one transform from variables; js/stage.js only sets the variables:
+   --ty offset (the reveal), --rot/--skew swing, --mx/--my/--sc the scroll scene, --wx/--wy/--wr the
+   tiny hand-nudge wobble. */
+.stage .l, .stage .hang, .gate__props, .sign {
+  transform:
+    translate(calc(var(--wx, 0px) + var(--mx, 0px)), calc(var(--ty, 0%) + var(--wy, 0px) + var(--my, 0px)))
+    scale(var(--sc, 1))
+    rotate(calc(var(--rot, 0deg) + var(--wr, 0deg)))
+    skewX(var(--skew, 0deg));
+}
+.stage .l, .stage .hang { will-change: transform; }
+
+/* names over the full-screen scene */
+.scene-title {
+  position: absolute; left: 0; right: 0; top: 44%;
+  text-align: center; color: var(--paper); pointer-events: none;
+  visibility: hidden;
+  /* --st-scale: js/stage.js shrinks the names to fit above the couple, keeping the bottom edge put */
+  transform: translate(var(--wx, 0px), calc(var(--ty, 0px) + var(--wy, 0px))) rotate(var(--wr, 0deg)) scale(var(--st-scale, 1));
+  transform-origin: 50% 100%;
+  text-shadow: 0 2px 0 rgb(60 10 10 / 0.25);
+}
+.stage .inner.unclipped { -webkit-clip-path: none !important; clip-path: none !important; }
+/* with the scroll scene the big names are on the scene; the Welcome block keeps them for screen readers only */
+.theatre[data-scroll] ~ #site .welcome { min-height: 0; }
+/* a returning guest (key remembered, see the boot script in index.html): open stage straight away,
+   no gate flashing up while the texts load */
+.returning #gate, .returning .stage .only-closed { display: none; }
+.scene-title .st__names { margin: 0; font: var(--t-names); }
+.scene-title .st__date { margin: 0.6rem 0 0; font: var(--t-label); }
+/* names: two lines, only the "&" / "и" in italic */
+.names .l2, .st__names .l2 { display: block; }
+.names em, .st__names em, .cap__names em { font-style: italic; }
+.stage .l-shade { background: rgb(52 26 20 / 0.94); }
+/* strings of the hanging stars, continued up under the arch */
+.stage .string { position: absolute; width: 1.5px; transform: translateX(-50%); background: #D6BA8C; }
+.theatre[data-state="open"] .only-closed { display: none; }
+
+/* password props stand in front of the stage, the sign overlapping the curtain */
+.gate__props {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%;
+  margin-top: calc(var(--stage-w) * -0.27);
+}
+.sign { position: relative; width: 62%; --ty: 0%; --rot: 0deg; }
+.sign__text {
+  position: absolute; left: 17%; right: 17%; top: 12%; height: 39%;
+  margin: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+  font: italic 500 clamp(15px, calc(var(--stage-w) * 0.066), 35px)/1.02 var(--serif); /* voice, sized by the stage */
+  color: var(--ink); text-wrap: balance; overflow-wrap: anywhere; hyphens: auto;
+}
+.ticket { position: relative; width: 92%; margin: 0; }
+/* until its font is in (max 0.9 s, see fontsFor in app.js) the sign stays blank instead of flashing a fallback */
+.fonts-wait .sign__text { visibility: hidden; animation: sign-show 0s 1.2s forwards; }
+@keyframes sign-show { to { visibility: visible; } }
+
+/* after the reveal: names under the stage, then the site */
+.caption { margin-top: 1.1rem; text-align: center; }
+.caption p { margin: 0; }
+.cap__names { font: var(--t-title); }
+.caption .cap__date { margin-top: 0.5rem; font: var(--t-label); }
+.cap__scroll { display: inline-block; margin-top: 0.6rem; padding: 12px 10px; font: var(--t-label); text-decoration: none; opacity: 0.75; }
+.ticket__input {
+  position: absolute; left: 13%; right: 21%; top: 40%; height: 34%;
+  border: 0; border-bottom: 1.5px dashed rgba(42, 34, 32, 0.35); border-radius: 0;
+  background: transparent; color: var(--ink); caret-color: var(--red);
+  font: var(--t-label); font-size: 1.25rem; line-height: 1; letter-spacing: 0.03em; text-align: center;
+  padding: 0 4px; outline: none; -webkit-appearance: none; appearance: none;
+}
+.ticket__input:focus-visible { border-bottom-color: var(--red); }
+/* a saved password must not paint the paper ticket light blue */
+.ticket__input:-webkit-autofill,
+.ticket__input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--red);
+  transition: background-color 9999s 0s, color 9999s 0s;
+}
+.ticket__go {
+  position: absolute; right: 8%; top: 36%; width: 12%; height: 42%;
+  border: 0; background: none; cursor: pointer;
+  font: var(--t-glyph); color: var(--red);
+}
+.ticket__go:disabled { opacity: 0.4; cursor: progress; }
+/* a blinking cursor on the empty ticket, so it's obvious where to type (phones don't autofocus) */
+.ticket__caret {
+  display: none; position: absolute; left: calc(50% - 4%); top: 46%; width: 2px; height: 22%;
+  background: var(--red); animation: caret 1s steps(1, end) infinite; pointer-events: none;
+}
+.ticket__input:placeholder-shown:not(:focus) ~ .ticket__caret { display: block; }
+@keyframes caret { 50% { opacity: 0; } }
+/* wrong password: three jerky steps, no easing (stop-motion rule) */
+.ticket.shake { animation: shake 360ms steps(1, end); }
+@keyframes shake {
+  0%   { transform: translate(-9px, 1px) rotate(-1.2deg); }
+  33%  { transform: translate(8px, -1px) rotate(1deg); }
+  66%  { transform: translate(-4px, 0) rotate(-0.5deg); }
+  100% { transform: none; }
+}
+
+/* ---------- sections ---------- */
+.sec {
+  --sec-pb: 72px;
+  position: relative; overflow: hidden;
+  padding: calc(var(--topbar) + 40px) max(var(--gutter), env(safe-area-inset-right)) var(--sec-pb) max(var(--gutter), env(safe-area-inset-left));
+}
+.sec__in { max-width: var(--measure); margin: 0 auto; }
+.t-cherry { background: var(--cherry); color: var(--paper); }
+.t-paper  { background: var(--paper);  color: var(--ink); }
+.t-butter { background: var(--butter); color: var(--ink); }
+.t-blush  { background: var(--blush);  color: var(--ink); }
+.t-ink    { background: var(--ink);    color: var(--paper); }
+
+.h2 { margin: 0 0 0.4em; font: var(--t-title); }
+.lede { margin: 0 0 2rem; font: var(--t-text); }
+.h3 { margin: 0 0 0.3em; font: var(--t-sub); }
+.label { font: var(--t-label); }
+p { margin: 0 0 1em; }
+
+/* welcome */
+.welcome { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; }
+.welcome .sec__in { width: 100%; }
+.names { margin: 0 0 0.5em; font: var(--t-names); }
+.welcome__date { margin: 0; font: var(--t-label); }
+.welcome__place { margin: 0 0 1.75rem; }
+.count { display: flex; align-items: baseline; gap: 0.5rem; margin: 2.25rem 0 0.25rem; }
+.count__n { font: var(--t-title); }
+.count__l { font: var(--t-text); }
+.jump { display: flex; flex-wrap: wrap; gap: 0 18px; margin: 2rem 0 0; padding: 0; list-style: none; font: var(--t-label); }
+.jump a { display: inline-block; padding: 10px 0; }
+
+/* schedule */
+.day { margin: 0 0 2.5rem; }
+.day > .label { color: var(--cherry); margin: 0 0 1rem; padding-bottom: 0.5rem; border-bottom: 1.5px solid currentColor; }
+.ev { margin: 0 0 1.75rem; }
+.ev__time { font: var(--t-label); }
+.ev__title { margin: 0.15rem 0 0.35rem; font: var(--t-sub); }
+.ev__meta { margin: 0 0 0.5rem; }
+.ev__meta > span { display: block; }
+.ev__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.75rem; }
+.chip-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 44px; padding: 7px 14px; border: 1.5px solid currentColor; border-radius: 999px;
+  font: var(--t-label); text-decoration: none; background: none; cursor: pointer;
+}
+
+/* stay / travel */
+.block { margin: 0 0 1.75rem; }
+.taxis { margin-top: 2.5rem; border-top: 1.5px solid currentColor; padding-top: 1.25rem; }
+.taxis .h3 { margin-bottom: 0.4rem; }
+.taxi-group { margin: 1.25rem 0 0; }
+.taxi-group .label { margin: 0 0 0.4rem; }
+.taxi { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 12px; padding: 2px 0; border-bottom: 1px solid rgba(42, 34, 32, 0.2); }
+.taxi span { padding: 8px 0; }
+.taxi a { display: inline-block; padding: 8px 0; white-space: nowrap; }
+
+/* Q&A */
+.qa details { border-top: 1px solid rgba(246, 230, 206, 0.28); }
+.qa details:last-of-type { border-bottom: 1px solid rgba(246, 230, 206, 0.28); }
+.qa summary {
+  list-style: none; cursor: pointer; display: flex; justify-content: space-between; gap: 16px;
+  padding: 16px 0; font: var(--t-text);
+}
+.qa summary::-webkit-details-marker { display: none; }
+.qa-mark::after { content: "+"; font: var(--t-glyph); line-height: 0.8; }
+.qa details[open] .qa-mark::after { content: "×"; }
+.qa details p { margin: 0 0 18px; opacity: 0.92; }
+
+/* RSVP section */
+.big-btn {
+  display: inline-block; margin-top: 0.5rem; border: 0; cursor: pointer; border-radius: 999px;
+  padding: 16px 30px; font: var(--t-label);
+  background: var(--paper); color: var(--cherry); box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+}
+.big-btn:focus-visible { outline-color: var(--paper); }
+
+/* ---------- RSVP panel ---------- */
+.rsvp-dialog {
+  width: 100%; max-width: 36rem; height: 100%; max-height: 100%;
+  margin: 0 auto; padding: 0; border: 0;
+  background: var(--paper); color: var(--ink);
+}
+.rsvp-dialog::backdrop { background: rgba(42, 34, 32, 0.55); }
+@media (min-width: 640px) {
+  .rsvp-dialog { height: auto; max-height: calc(100% - 48px); margin: 24px auto; border-radius: 6px; }
+}
+.panel { padding: max(20px, env(safe-area-inset-top)) var(--gutter) 40px; }
+.panel__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 1rem; }
+.panel__close { background: none; border: 0; cursor: pointer; font: var(--t-glyph); min-width: 44px; min-height: 44px; margin: -6px -10px 0 0; }
+.panel .h2 { margin: 0.25rem 0 0; }
+.field { margin: 0 0 1.4rem; border: 0; padding: 0; }
+.field > label, .field > legend { display: block; margin: 0 0 0.45rem; padding: 0; font: var(--t-label); }
+.field .hint { display: block; font: var(--t-small); opacity: 0.7; margin-top: 2px; }
+.input {
+  width: 100%; border: 0; border-bottom: 1.5px solid rgba(42, 34, 32, 0.4); border-radius: 0;
+  background: transparent; padding: 8px 0; font: var(--t-text); color: inherit;
+  -webkit-appearance: none; appearance: none;
+}
+textarea.input { min-height: 4.5rem; resize: vertical; }
+.input:focus { outline: none; border-bottom-color: var(--cherry); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span {
+  display: inline-block; padding: 10px 16px; border: 1.5px solid var(--ink); border-radius: 999px;
+  font: var(--t-label);
+}
+.chip input:checked + span { background: var(--ink); color: var(--paper); }
+.chip input:focus-visible + span { outline: 2px solid var(--cherry); outline-offset: 2px; }
+.send {
+  margin-top: 0.5rem; width: 100%; border: 0; cursor: pointer; border-radius: 999px;
+  padding: 17px 24px; font: var(--t-label);
+  background: var(--cherry); color: var(--paper);
+}
+.send:focus-visible { outline-color: var(--cherry); }
+.send:disabled { opacity: 0.6; cursor: progress; }
+.form-msg { margin: 0 0 0.75rem; font: var(--t-label); color: var(--red); }
+.form-msg:empty { margin: 0; }
+.input[aria-invalid="true"] { border-bottom-color: var(--red); }
+fieldset[aria-invalid="true"] > legend { color: var(--red); }
+.hp { position: absolute; left: -5000px; width: 1px; height: 1px; overflow: hidden; }
+.thanks { padding-top: 12vh; }
+.thanks .h2 { margin-bottom: 0.5rem; }
+.thanks .row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.5rem; }
+
+/* ---------- personality: hanging stars + the moon's one-liners (brief §6, light touches only) ---------- */
+/* a paper star hanging into the section from the one above, its string starting at the edge */
+.hang-star {
+  position: absolute; top: 0; right: max(8%, calc(50% - var(--measure) / 2 - 20px));
+  width: 44px; height: auto; transform-origin: 50% 0; pointer-events: none;
+  /* a pendulum in hand-moved steps (~9 fps), slower at the ends — no smooth easing */
+  animation: star-sway 3.4s steps(6, end) infinite alternate;
+}
+#stay .hang-star   { width: 34px; animation-duration: 2.9s; }
+#travel .hang-star { width: 52px; animation-duration: 3.9s; }
+#qa .hang-star     { animation-duration: 3.1s; }
+#rsvp .hang-star   { width: 36px; animation-duration: 3.6s; }
+@keyframes star-sway {
+  0%   { transform: rotate(-4deg); }
+  25%  { transform: rotate(-2.6deg); }
+  50%  { transform: rotate(0deg); }
+  75%  { transform: rotate(2.6deg); }
+  100% { transform: rotate(4deg); }
+}
+/* the peeking moon sits on the section's bottom edge, half out of the screen, with her line */
+.moon-says {
+  display: flex; align-items: flex-end; justify-content: flex-end; gap: 6px;
+  max-width: var(--measure); margin: 1.75rem auto calc(-1 * var(--sec-pb));
+}
+.moon-says__line { margin: 0 0 32px; max-width: 13em; text-align: right; font: var(--t-voice); }
+.moon-says__moon { flex: none; width: 116px; margin-right: calc(-1 * var(--gutter) - 26px); }
+.moon-says.left { flex-direction: row-reverse; }
+.moon-says.left .moon-says__line { text-align: left; }
+.moon-says.left .moon-says__moon { margin-right: 0; margin-left: calc(-1 * var(--gutter) - 26px); transform: scaleX(-1); }
+
+@media (min-width: 900px) {
+  :root { --gutter: 48px; }
+  .sec { padding-top: calc(var(--topbar) + 72px); --sec-pb: 110px; }
+  .moon-says__moon { width: 140px; margin-right: -40px; }
+  .moon-says.left .moon-says__moon { margin-left: -40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket.shake { animation: none; }
+  .ticket__caret { animation: none; }
+  .hang-star { animation: none; transform: rotate(-2deg); }
+}
+
+.cal-label { width: 100%; font: var(--t-label); opacity: 0.7; }
