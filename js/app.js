@@ -294,7 +294,7 @@
   function hangingStar(id) {
     const star = STARS[id];
     if (!star) return null;
-    return h('img.hang-star', { src: `img/kit/${star}-sm.webp`, alt: '', 'aria-hidden': 'true', loading: 'lazy', decoding: 'async' });
+    return h('img.hang-star', { src: imgUrl(`kit/${star}-sm.webp`), alt: '', 'aria-hidden': 'true', loading: 'lazy', decoding: 'async' });
   }
   const PEEK_DELAY = { stay: '0s', travel: '-2.6s', qa: '-4.9s' }; // so the corner moons don't move in unison
   function moonSays(id) {
@@ -309,12 +309,19 @@
       h('p.moon-says__line', { text: line }),
       h('div.moon-says__moon.peek', { 'aria-hidden': 'true', style: `--d: ${PEEK_DELAY[id] || '0s'}` },
         h('img.peek__base', { ...kitImg('moon-peek-eyeless', 391, 782, peekSizes), ...lazy }),
-        h('div.peek__eye', null, h('img.peek__iris', { src: 'img/kit/moon-peek-iris.webp', ...lazy })),
+        h('div.peek__eye', null, h('img.peek__iris', { src: imgUrl('kit/moon-peek-iris.webp'), ...lazy })),
         h('img.peek__blink', { ...kitImg('moon-peek-2-blink', 390, 780, peekSizes), ...lazy })));
   }
   // a kit picture in its two widths (tools/hd_kit.py), so phones with dense screens get the full file
   function kitImg(name, smW, fullW, sizes) {
-    return { src: `img/kit/${name}-sm.webp`, srcset: `img/kit/${name}-sm.webp ${smW}w, img/kit/${name}.webp ${fullW}w`, sizes };
+    const sm = imgUrl(`kit/${name}-sm.webp`);
+    return { src: sm, srcset: `${sm} ${smW}w, ${imgUrl(`kit/${name}.webp`)} ${fullW}w`, sizes };
+  }
+  // a picture's address with its content fingerprint (tools/build.mjs → public data "img"): a new
+  // build's art shows at once, unchanged art stays in the browser's cache
+  function imgUrl(path) {
+    const v = pub && pub.img && pub.img[path];
+    return `img/${path}${v ? `?v=${v}` : ''}`;
   }
   const title = (t) => h('h2.h2', null, t);
   const lede = (t) => (t ? h('p.lede', { text: t }) : null);
