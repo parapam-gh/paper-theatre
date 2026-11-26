@@ -304,12 +304,17 @@
     // her eyes are alive: an empty eye with the iris on top (it glances across and back) and the
     // kit's blink frame now and then; css/site.css (peek block, from tools/moon_eye.py) moves them
     const lazy = { alt: '', loading: 'lazy', decoding: 'async' };
+    const peekSizes = '(min-width: 900px) 140px, 116px'; // .moon-says__moon in css/site.css
     return h(`div.moon-says${id === 'travel' ? '.left' : ''}`, null,
       h('p.moon-says__line', { text: line }),
       h('div.moon-says__moon.peek', { 'aria-hidden': 'true', style: `--d: ${PEEK_DELAY[id] || '0s'}` },
-        h('img.peek__base', { src: 'img/kit/moon-peek-eyeless-sm.webp', ...lazy }),
+        h('img.peek__base', { ...kitImg('moon-peek-eyeless', 391, 782, peekSizes), ...lazy }),
         h('div.peek__eye', null, h('img.peek__iris', { src: 'img/kit/moon-peek-iris.webp', ...lazy })),
-        h('img.peek__blink', { src: 'img/kit/moon-peek-2-blink-sm.webp', ...lazy })));
+        h('img.peek__blink', { ...kitImg('moon-peek-2-blink', 390, 780, peekSizes), ...lazy })));
+  }
+  // a kit picture in its two widths (tools/hd_kit.py), so phones with dense screens get the full file
+  function kitImg(name, smW, fullW, sizes) {
+    return { src: `img/kit/${name}-sm.webp`, srcset: `img/kit/${name}-sm.webp ${smW}w, img/kit/${name}.webp ${fullW}w`, sizes };
   }
   const title = (t) => h('h2.h2', null, t);
   const lede = (t) => (t ? h('p.lede', { text: t }) : null);
@@ -346,6 +351,7 @@
   // The end of the page closes the show the way it opened: the moon falls asleep again — her eyes
   // close as the page reaches its end and open again on the way back up (see watchFinale).
   const FINALE_FACES = ['moon-3-awake', 'moon-2-drowsy', 'moon-1-asleep'];
+  const FINALE_W = { 'moon-3-awake': [482, 965], 'moon-2-drowsy': [482, 964], 'moon-1-asleep': [483, 966] }; // -sm / full widths
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let finaleFace = reduceMotion.matches ? 2 : 0; // the face on show; survives a re-render (language)
   let finaleKick = () => {}; // re-check the face (set by watchFinale; also called when a face arrives)
@@ -354,7 +360,9 @@
     return h('section.finale', { id: 'finale', 'data-theme': 'cream' },
       h('div.finale__moon', { 'aria-hidden': 'true' },
         // not lazy: a lazy image that is hidden never loads, and the first swap would show nothing
-        ...FINALE_FACES.map((f, i) => h('img.finale__face', { src: `img/kit/${f}-sm.webp`, alt: '', decoding: 'async', hidden: i !== finaleFace, onload: () => finaleKick() }))),
+        ...FINALE_FACES.map((f, i) => h('img.finale__face', {
+          ...kitImg(f, FINALE_W[f][0], FINALE_W[f][1], '(min-width: 462px) 240px, 52vw'), // .finale__moon: min(52vw, 240px)
+          alt: '', decoding: 'async', hidden: i !== finaleFace, onload: () => finaleKick() }))),
       T.finale ? h('p.finale__line', { text: T.finale.line }) : null,
       h('p.finale__names', null, ...names(W)),
       h('p.finale__date', null, W.date));
