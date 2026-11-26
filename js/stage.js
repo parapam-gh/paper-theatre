@@ -149,6 +149,7 @@
       requestAnimationFrame(() => { queued = false; applyScene(sceneProgress()); });
     };
     addEventListener('scroll', onScroll, { passive: true });
+    $('#stage-caption').addEventListener('click', playToWelcome);
     addEventListener('resize', () => {
       const r = $('#theatre-sticky').getBoundingClientRect();
       if (Math.round(r.width) === sized.w && Math.round(r.height) === sized.h) return; // nothing moved
@@ -162,6 +163,50 @@
       new ResizeObserver(() => centre()).observe($('.theatre__in')); // names under the stage changed size
     } else centre();
     applyScene(sceneProgress());
+  }
+
+  /* A tap on "scroll ↓" under the stage plays the scene by itself, step by step — the frame lifted
+     off, the red paper over the screen, the couple and the names in place — holds it for a moment,
+     then carries on to the invitation. (Without it the link jumped straight to the invitation and the
+     whole scene was skipped.) The page is scrolled to each step's spot, so it is the same scene a
+     finger plays; a finger, the wheel or a key during the show stops it and hands control back.
+     Reduced motion: no scene, the link simply goes to the invitation. */
+  const AUTO_STEP = 140;  // ms per step, like the curtain (8 steps ≈ 1.1 s)
+  const AUTO_HOLD = 1400; // the finished scene stays this long before moving on
+  let autoplay = null;
+  async function playToWelcome(e) {
+    if (!e.target.closest('.cap__scroll') || !moves) return;
+    e.preventDefault();
+    if (autoplay) return;
+    const run = { stopped: false };
+    autoplay = run;
+    const stop = () => { run.stopped = true; };
+    const opts = { passive: true, once: true };
+    addEventListener('wheel', stop, opts);
+    addEventListener('touchstart', stop, opts);
+    addEventListener('keydown', stop, opts);
+    try {
+      const theatre = $('#theatre');
+      const top = theatre.getBoundingClientRect().top + scrollY;
+      const track = theatre.offsetHeight - $('#theatre-sticky').offsetHeight;
+      for (let i = 1; i <= SCENE_STEPS && !run.stopped; i++) {
+        window.scrollTo(0, Math.round(top + (track * SCENE_RUN * i) / SCENE_STEPS));
+        await sleep(AUTO_STEP);
+      }
+      if (!run.stopped) await sleep(AUTO_HOLD);
+      if (!run.stopped) {
+        const welcome = $('#welcome');
+        welcome.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // keyboard and screen-reader users land on the invitation too
+        const heading = $('.names', welcome);
+        if (heading) { heading.setAttribute('tabindex', '-1'); heading.focus({ preventScroll: true }); }
+      }
+    } finally {
+      removeEventListener('wheel', stop);
+      removeEventListener('touchstart', stop);
+      removeEventListener('keydown', stop);
+      autoplay = null;
+    }
   }
 
   function sceneProgress() {

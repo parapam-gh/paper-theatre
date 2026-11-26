@@ -127,7 +127,9 @@ body[data-under="cherry"] .rsvp-btn:focus-visible, body[data-under="ink"] .rsvp-
     rotate(calc(var(--rot, 0deg) + var(--wr, 0deg)))
     skewX(var(--skew, 0deg));
 }
-.stage .l, .stage .hang { will-change: transform; }
+/* no will-change on the layers: Safari draws a will-change layer once at its small stage size and then
+   stretches that bitmap, so the scroll scene (paper ×3, couple ×1.9) went soft. Without it the
+   browser paints each stepped frame at its real size — at 8–12 steps a second that costs nothing. */
 /* taps go through the paper to the stage's two blinkers (the couple, the peeking moon): a tap on them
    makes them blink (js/stage.js); everything else on the stage is see-through for the finger */
 .stage .l, .stage .hang { pointer-events: none; }
